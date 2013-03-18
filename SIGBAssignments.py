@@ -1,8 +1,48 @@
 import cv2
 import numpy as np
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
+from pylab import *
 from math import *
 from SIGBTools import *
+
+def kmeans(windows):
+    def callback(image, sliderValues):
+        gray = getGray(image)
+
+        k = int(sliderValues['K'])
+        dw = int(sliderValues['dist_weight'])
+
+        centroids, variance = getKMeans(gray, featureCount=k, distanceWeight=dw, smallSize=(100, 75), show=False)
+
+        centroids = sorted(centroids, key=lambda centroid: centroid[0])
+
+        # We're hoping that centroids[0] after sorting is the darkest value, so we subtract the variance and
+        # that should give us a reliable value (pupil)
+        retval, gray = cv2.threshold(gray, centroids[0][0] - centroids[0][1], 255, cv2.cv.CV_THRESH_BINARY)
+
+        return gray
+
+    windows.registerSlider("K", 4, 100)
+    windows.registerSlider("dist_weight", 12, 100)
+    windows.registerOnUpdateCallback("kmeans", callback, "Temp")
+
+def cannyFitting(windows):
+    def callback(image, sliderValues):
+        gray = getGray(image)
+
+
+
+        thresh1 = int(sliderValues['canny_thresh1'])
+        thresh2 = int(sliderValues['canny_thresh2'])
+        canny = cv2.Canny(gray, thresh1, thresh2)
+
+
+
+        return canny
+
+    windows.registerSlider("canny_thresh1", 100, 255)
+    windows.registerSlider("canny_thresh2", 128, 255)
+    windows.registerOnUpdateCallback("canny_fitting", callback, "Temp")
 
 def gradient(windows):
     def gradientCallback(image, sliderValues):
@@ -10,8 +50,10 @@ def gradient(windows):
         sobelHorizontal = cv2.Sobel(gray, cv2.CV_32F, 1, 0)
         sobelVertical = cv2.Sobel(gray, cv2.CV_32F, 0, 1)
 
-        h = cv2.convertScaleAbs(sobelHorizontal)
-        v = cv2.convertScaleAbs(sobelVertical)
+        h = sobelHorizontal
+        v = sobelVertical
+#        h = cv2.convertScaleAbs(sobelHorizontal)
+#        v = cv2.convertScaleAbs(sobelVertical)
 
         result = cv2.addWeighted(h, 0.5, v, 0.5, 0)
 
@@ -21,10 +63,11 @@ def gradient(windows):
         height, width = h.shape
         for y in range(height):
             for x in range(width):
-                orientation[y][x] = atan2(v[y][x], h[y][x]) * 180 / pi
-                magnitude[y][x] = sqrt(pow(v[y][x], 2) + pow(h[y][x], 2))
+                orientation[y][x] = atan2(h[y][x], v[y][x]) * 180 / pi
+                magnitude[y][x] = sqrt(pow(h[y][x], 2) + pow(v[y][x], 2))
 
-#        result = cv2.convertScaleAbs(magnitude)
+        result = cv2.convertScaleAbs(magnitude)
+
 #        h = orientation * 179 / 255
 #        s = np.empty(gray.shape)
 #        s.fill(255)
@@ -32,14 +75,13 @@ def gradient(windows):
 #        v.fill(255)
 #        hsv = np.dstack((h, s, v))
 #        hsv = hsv.astype(np.uint8)
-#
+
 #        result = cv2.cvtColor(hsv, cv2.COLOR_HSV2BGR)
 
-        fig = plt.figure()
-#        result = result[::10, ::10]
-#        (velx, vely) = np.gradient(result)
-        plt.quiver(v[::10, ::10], h[::10, ::10])
-        plt.show()
+        fig = figure()
+        res = 5
+        quiver(h[::res, ::res], v[::res, ::res])
+        show()
 
         return result
 

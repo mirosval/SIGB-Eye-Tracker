@@ -4,8 +4,10 @@ from SIGBAssignments import *
 
 windows = SIGBWindows()
 
-windows.openVideo("Sequences/eye1.avi")
+windows.openVideo("Sequences/eye6.avi")
 
-gradient(windows)
+kmeans(windows)
+# cannyFitting(windows)
+# gradient(windows)
 
 windows.show()

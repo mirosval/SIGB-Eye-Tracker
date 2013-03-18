@@ -10,7 +10,7 @@ class SIGBWindows:
 
     def show(self):
         cv2.resizeWindow("Settings", 1000, 450)
-        cv2.moveWindow("Settings", 300, 520)
+        cv2.moveWindow("Settings", 300, 540)
 
         cv2.resizeWindow("Results", 640, 480)
         cv2.moveWindow("Results", 0, 0)
