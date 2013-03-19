@@ -4,7 +4,7 @@ from SIGBAssignments import *
 
 windows = SIGBWindows()
 
-windows.openVideo("Sequences/eye6.avi")
+windows.openVideo("Sequences/eye1.avi")
 
 kmeans(windows)
 # cannyFitting(windows)

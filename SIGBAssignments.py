@@ -1,6 +1,5 @@
 import cv2
 import numpy as np
-# import matplotlib.pyplot as plt
 from pylab import *
 from math import *
 from SIGBTools import *
@@ -19,6 +18,9 @@ def kmeans(windows):
         # We're hoping that centroids[0] after sorting is the darkest value, so we subtract the variance and
         # that should give us a reliable value (pupil)
         retval, gray = cv2.threshold(gray, centroids[0][0] - centroids[0][1], 255, cv2.cv.CV_THRESH_BINARY)
+
+        # Cleanup using closing
+        gray = getClosed(gray, 5)
 
         return gray
 
