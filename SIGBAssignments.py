@@ -11,18 +11,31 @@ def kmeans(windows):
         k = int(sliderValues['K'])
         dw = int(sliderValues['dist_weight'])
 
+        gray = cv2.equalizeHist(gray)
+
         centroids, variance = getKMeans(gray, featureCount=k, distanceWeight=dw, smallSize=(100, 75), show=False)
 
         centroids = sorted(centroids, key=lambda centroid: centroid[0])
 
-        # We're hoping that centroids[0] after sorting is the darkest value, so we subtract the variance and
-        # that should give us a reliable value (pupil)
+        pupils = []
         retval, gray = cv2.threshold(gray, centroids[0][0] - centroids[0][1], 255, cv2.cv.CV_THRESH_BINARY)
 
         # Cleanup using closing
         gray = getClosed(gray, 5)
 
-        return gray
+        result = image
+
+        pupils = getPupilCandidates(gray)
+
+        for pupil in pupils:
+            cv2.ellipse(result, pupil, (255, 0, 0))
+
+        if len(pupils) > 0:
+            cv2.ellipse(result, pupils[0], (0, 0, 255), 2)
+            center = (int(pupils[0][0][0]), int(pupils[0][0][1]))
+            cv2.circle(result, center, 1, (0, 255, 0), 2)
+
+        return result
 
     windows.registerSlider("K", 4, 100)
     windows.registerSlider("dist_weight", 12, 100)
@@ -77,12 +90,12 @@ def gradient(windows):
 #        v.fill(255)
 #        hsv = np.dstack((h, s, v))
 #        hsv = hsv.astype(np.uint8)
-
 #        result = cv2.cvtColor(hsv, cv2.COLOR_HSV2BGR)
+#        return result
 
         fig = figure()
         res = 5
-        quiver(h[::res, ::res], v[::res, ::res])
+        quiver(h[::-res, ::res], -v[::-res, ::res])
         show()
 
         return result
@@ -102,6 +115,9 @@ def hough(windows):
 
         blur = cv2.GaussianBlur(gray, (31, 31), 11)
     #    circles = cv2.HoughCircles(gray, cv2.cv.CV_HOUGH_GRADIENT, 2, 10, None, 10, 350, 50, 155)
+
+#        gray = cv2.Canny(gray, 100, 128)
+
         circles = cv2.HoughCircles(gray, cv2.cv.CV_HOUGH_GRADIENT, dp, minDist, None, param1, param2, minRadius, maxRadius)
 
         result = image
@@ -124,10 +140,10 @@ def hough(windows):
 
         return result
 
-    windows.registerSlider("hough_dp", 2, 10)
-    windows.registerSlider("hough_min_dist", 10, 100)
-    windows.registerSlider("hough_param1", 10, 100)
-    windows.registerSlider("hough_param2", 350, 1500)
-    windows.registerSlider("hough_min_radius", 70, 500)
-    windows.registerSlider("hough_max_radius", 160, 800)
+    windows.registerSlider("hough_dp", 8, 15)
+    windows.registerSlider("hough_min_dist", 307, 500)
+    windows.registerSlider("hough_param1", 52, 200)
+    windows.registerSlider("hough_param2", 447, 1500)
+    windows.registerSlider("hough_min_radius", 28, 500)
+    windows.registerSlider("hough_max_radius", 110, 500)
     windows.registerOnUpdateCallback("hough", houghCallback, "Temp")

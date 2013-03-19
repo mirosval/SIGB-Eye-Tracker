@@ -40,13 +40,50 @@ def getKMeans(image, featureCount=2, distanceWeight=2, smallSize=(100, 100), sho
     return centroids, variance
 
 def getClosed(image, size=5):
-    kernel = cv2.getStructuringElement(cv2.MORPH_ERODE, (2 * size + 1, 2 * size + 1))
+    '''
+    Morphologically closed image
+    
+    Performs Morphologic operations erode -> dilate with the same kernel size
+    in order to close holes in the image
+    
+    Args:
+        image (Numpy Array): input bitmap image
+        size (int): kernel size (1,3,5,7
+    
+    Returns:
+        filtered bitmap
+    '''
+    kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (2 * size + 1, 2 * size + 1))
     image = cv2.erode(image, kernel)
-
-    kernel = cv2.getStructuringElement(cv2.MORPH_DILATE, (2 * size + 1, 2 * size + 1))
     image = cv2.dilate(image, kernel)
 
     return image
+
+def getPupilCandidates(image):
+    def orderPupilCandidates(pupil):
+        c = ContourTools(pupil)
+        return c.getExtend()
+
+    contours, hierarchy = cv2.findContours(image, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
+
+    imageArea = image.shape[0] * image.shape[1]
+
+    candidates = []
+    for contour in contours:
+        c = ContourTools(contour)
+        area = c.getArea()
+        if area < imageArea * 0.002 or area > imageArea * 0.3: continue
+        candidates.append(contour)
+
+    candidates = sorted(candidates, key=orderPupilCandidates, reverse=True)
+
+    pupils = []
+    for candidate in candidates:
+        pupil = cv2.fitEllipse(candidate)
+        pupils.append(pupil)
+
+    return pupils
+
 
 class ContourTools:
     '''Class used for getting descriptors of contour-based connected components 
@@ -99,6 +136,11 @@ class ContourTools:
             retVal = (-1, -1)
 
         return retVal
+
+    def getCentroidInt(self):
+        centroid = self.getCentroid()
+
+        return (int(centroid[0]), int(centroid[1]))
 
     def getEquivDiameter(self):
         area = self.getArea()
