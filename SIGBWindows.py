@@ -10,7 +10,7 @@ class SIGBWindows:
         cv2.namedWindow("Results")
         cv2.namedWindow("Temp")
 
-    def show(self, cam=False):
+    def show(self):
         cv2.resizeWindow("Settings", 1000, 450)
         cv2.moveWindow("Settings", 300, 540)
 
@@ -20,13 +20,7 @@ class SIGBWindows:
         cv2.resizeWindow("Temp", 640, 480)
         cv2.moveWindow("Temp", 1030, 0)
 
-        if not cam:
-            cv2.setTrackbarPos("video_position", "Settings", 1)
-            sliderValues = self.getSliderValues()
-            self.image = self.getVideoFrame(sliderValues['video_position'])
-            self.update()
-            key = cv2.waitKey(0)
-        else:
+        if self.mode == "cam":
             while True:
                 key = cv2.waitKey(1)
 
@@ -35,6 +29,12 @@ class SIGBWindows:
 
                 if key == 0:
                     break
+        else:
+            cv2.setTrackbarPos("video_position", "Settings", 1)
+            sliderValues = self.getSliderValues()
+            self.image = self.getVideoFrame(sliderValues['video_position'])
+            self.update()
+            key = cv2.waitKey(0)
 
         cv2.destroyAllWindows()
 
@@ -56,6 +56,11 @@ class SIGBWindows:
 
     def update(self, trackbarPos=None):
         sliderValues = self.getSliderValues()
+
+        if self.mode == "video":
+            sliderValues = self.getSliderValues()
+            self.image = self.getVideoFrame(sliderValues['video_position'])
+
         image = np.copy(self.image)
 
         cv2.imshow("Results", image)
