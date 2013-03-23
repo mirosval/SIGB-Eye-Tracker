@@ -5,6 +5,27 @@ from math import *
 from SIGBTools import *
 from SIGBSolutions import *
 
+def irisUsingVectors(windows):
+    def callback(image, sliderValues):
+        result = image
+
+        pupils = getPupils(image)
+        pupil = pupils[0]
+
+        if len(pupils) > 0:
+            cv2.ellipse(result, pupil, (0, 0, 255), 2)
+            center = (int(pupil[0][0]), int(pupil[0][1]))
+            cv2.circle(result, center, 1, (0, 255, 0), 2)
+
+        center, radius = getIrisForPupil(image, pupil)
+
+        cv2.circle(result, center, radius, (255, 0, 255), 2)
+
+        return result
+
+    windows.registerSlider("angle", 0, 360)
+    windows.registerOnUpdateCallback("kmeans", callback, "Temp")
+
 def pupilUsingKmeans(windows):
     def callback(image, sliderValues):
 
@@ -120,7 +141,7 @@ def getGlint(windows):
         return result
     windows.registerSlider("glitmin", 50, 250)
     windows.registerSlider("glitmax", 500, 2000)
-    windows.registerSlider("thr", 10,200)
+    windows.registerSlider("thr", 10, 200)
     windows.registerOnUpdateCallback("glint", glintCallBack, "Temp")
 
 

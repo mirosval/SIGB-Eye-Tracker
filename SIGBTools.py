@@ -1,6 +1,7 @@
 import cv2
 import numpy as np
 
+from math import *
 from pylab import *
 from scipy.cluster.vq import *
 from scipy.misc import imresize
@@ -38,6 +39,26 @@ def getKMeans(image, featureCount=2, distanceWeight=2, smallSize=(100, 100), sho
         f.show()
 
     return centroids, variance
+
+def getOrientationAndMagnitude(image):
+    gray = getGray(image)
+
+    sobelHorizontal = cv2.Sobel(gray, cv2.CV_32F, 1, 0)
+    sobelVertical = cv2.Sobel(gray, cv2.CV_32F, 0, 1)
+
+    h = sobelHorizontal
+    v = sobelVertical
+
+    orientation = np.empty(gray.shape)
+    magnitude = np.empty(gray.shape)
+
+    height, width = h.shape
+    for y in range(height):
+        for x in range(width):
+            orientation[y][x] = atan2(h[y][x], v[y][x]) * 180 / pi
+            magnitude[y][x] = sqrt(pow(h[y][x], 2) + pow(v[y][x], 2))
+
+    return orientation, magnitude
 
 def getClosed(image, size=5):
     '''
@@ -84,6 +105,11 @@ def getPupilCandidates(image):
 
     return pupils
 
+
+def getEllipseSample(ellipse, angle):
+
+
+    print(ellipse)
 
 class ContourTools:
     '''Class used for getting descriptors of contour-based connected components 
@@ -153,3 +179,64 @@ class ContourTools:
 
     def getConvexHull(self):
         return cv2.convexHull(self.contour)
+
+def getCircleSamples(center=(0, 0), radius=1, nPoints=30):
+    ''' Samples a circle with center center = (x,y) , radius =1 and in nPoints on the circle.
+    Returns an array of a tuple containing the points (x,y) on the circle and the curve gradient in the point (dx,dy)
+    Notice the gradient (dx,dy) has unit length'''
+
+
+    s = np.linspace(0, 2 * math.pi, nPoints)
+    # points
+    P = [(radius * np.cos(t) + center[0], radius * np.sin(t) + center[1], np.cos(t), np.sin(t)) for t in s ]
+    return P
+
+def getLineCoordinates(p1, p2):
+    "Get integer coordinates between p1 and p2 using Bresenhams algorithm"
+    " When an image I is given the method also returns the values of I along the line from p1 to p2. p1 and p2 should be within the image I"
+    " Usage: coordinates=getLineCoordinates((x1,y1),(x2,y2))"
+
+
+    (x1, y1) = p1
+    x1 = int(x1); y1 = int(y1)
+    (x2, y2) = p2
+    x2 = int(x2);y2 = int(y2)
+
+    points = []
+    issteep = abs(y2 - y1) > abs(x2 - x1)
+    if issteep:
+        x1, y1 = y1, x1
+        x2, y2 = y2, x2
+    rev = False
+    if x1 > x2:
+        x1, x2 = x2, x1
+        y1, y2 = y2, y1
+        rev = True
+    deltax = x2 - x1
+    deltay = abs(y2 - y1)
+    error = int(deltax / 2)
+    y = y1
+    ystep = None
+    if y1 < y2:
+        ystep = 1
+    else:
+        ystep = -1
+    for x in range(x1, x2 + 1):
+        if issteep:
+            points.append([y, x])
+        else:
+            points.append([x, y])
+        error -= deltay
+        if error < 0:
+            y += ystep
+            error += deltax
+    # Reverse the list if the coordinates were reversed
+    if rev:
+        points.reverse()
+
+    retPoints = np.array(points)
+    X = retPoints[:, 0];
+    Y = retPoints[:, 1];
+
+
+    return retPoints

@@ -4,10 +4,11 @@ from SIGBAssignments import *
 
 windows = SIGBWindows(mode="video")
 
-windows.openVideo("Sequences/eye1.avi")
+windows.openVideo("Sequences/eye3.avi")
 windows.openImage("Sequences/hough2.png")
 
-pupilUsingKmeans(windows)
+irisUsingVectors(windows)
+# pupilUsingKmeans(windows)
 # cannyFitting(windows)
 # gradient(windows)
 # hough(windows)
