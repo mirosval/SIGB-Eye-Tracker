@@ -91,6 +91,39 @@ def gradient(windows):
 
     windows.registerOnUpdateCallback("gradient", gradientCallback, "Temp")
 
+def getGlint(windows):
+    def glintCallBack(image, sliderValues):
+        glitmin = int(sliderValues['glitmin'])
+        glitmax = int(sliderValues['glitmax'])
+        thr = int(sliderValues['thr'])
+        gray = getGray(image)
+
+        glints = []
+        val, binI = cv2.threshold(gray, thr, 255, cv2.THRESH_BINARY)
+        contours, hierarchy = cv2.findContours(binI, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
+        accepted = []
+        result = gray
+        for contour in contours:
+            pt = ContourTools(contour)
+            if pt.getArea() < glitmin or pt.getArea() > glitmax:
+                continue
+            if pt.getExtend() < 0.7:
+                continue
+            accepted.append(contour)
+            c = pt.getCentroidInt()
+            glint = (c[0], c[1])
+            print "This is ", glint
+            glints.append(glint)
+            color = (0, 255, 0)
+            cv2.circle(result, (glitmin, glitmax), 13, color)
+
+        return result
+    windows.registerSlider("glitmin", 50, 250)
+    windows.registerSlider("glitmax", 500, 2000)
+    windows.registerSlider("thr", 10,200)
+    windows.registerOnUpdateCallback("glint", glintCallBack, "Temp")
+
+
 def hough(windows):
     def houghCallback(image, sliderValues):
         gray = getGray(image)
