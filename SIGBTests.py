@@ -46,7 +46,7 @@ for sequence, frames in sequences.items():
         cv2.imwrite("Results/{}_{}.png".format(sequence, frameId), result)
 
         frameCount += 1
-        if len(results) > 0:
+        if len(pupils) > 0:
             detections += 1
 
     totalDetections += detections
