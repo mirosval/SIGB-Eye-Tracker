@@ -113,9 +113,12 @@ def getIrisForPupil(image, pupil, show=False):
 
         cnt = 0
         for s in sob:
-            mag = magnitude[s[1]][s[0]]
+            try:
+                mag = magnitude[s[1] - 1][s[0] - 1]
+            except:
+                continue
             if mag > 15:
-                ori = orientation[s[1]][s[0]]
+                ori = orientation[s[1] - 1][s[0] - 1]
                 if abs(angle - ori) < 5:
                     if show:
                         cv2.circle(image, (s[0], s[1]), 2, (255, 255, 0), 2)

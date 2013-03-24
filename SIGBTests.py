@@ -36,11 +36,12 @@ for sequence, frames in sequences.items():
         pupils = getPupils(frame)
         result = drawPupils(result, pupils)
 
-        iris = getIrisForPupil(frame, pupils[0])
-        result = drawIris(result, iris)
+        if len(pupils) > 0:
+            iris = getIrisForPupil(frame, pupils[0])
+            result = drawIris(result, iris)
 
-        glints = getGlints(frame, iris)
-        result = drawGlints(result, glints)
+            glints = getGlints(frame, iris)
+            result = drawGlints(result, glints)
 
         # Save Frame
         cv2.imwrite("Results/{}_{}.png".format(sequence, frameId), result)
@@ -52,8 +53,7 @@ for sequence, frames in sequences.items():
     totalDetections += detections
     totalFrameCount += frameCount
     success = float(detections) / float(frameCount) * 100.0
-    print("\nPupil Detection: Got {} detections out of {} frames ({}% success rate)".format(detections, frameCount, success))
-    print()
+    print("Got {} detections out of {} frames ({}% success rate)".format(detections, frameCount, success))
 
 
 totalSuccess = float(totalDetections) / float(totalFrameCount) * 100.0
