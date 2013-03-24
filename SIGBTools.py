@@ -41,16 +41,14 @@ def getKMeans(image, featureCount=2, distanceWeight=2, smallSize=(100, 100), sho
     return centroids, variance
 
 def getOrientationAndMagnitude(image):
-    gray = getGray(image)
-
-    sobelHorizontal = cv2.Sobel(gray, cv2.CV_32F, 1, 0)
-    sobelVertical = cv2.Sobel(gray, cv2.CV_32F, 0, 1)
+    sobelHorizontal = cv2.Sobel(image, cv2.CV_32F, 1, 0)
+    sobelVertical = cv2.Sobel(image, cv2.CV_32F, 0, 1)
 
     h = sobelHorizontal
     v = sobelVertical
 
-    orientation = np.empty(gray.shape)
-    magnitude = np.empty(gray.shape)
+    orientation = np.empty(image.shape)
+    magnitude = np.empty(image.shape)
 
     height, width = h.shape
     for y in range(height):
@@ -69,14 +67,32 @@ def getClosed(image, size=5):
     
     Args:
         image (Numpy Array): input bitmap image
-        size (int): kernel size (1,3,5,7
+        size (int): kernel size (1,3,5,7)
     
     Returns:
         filtered bitmap
     '''
     kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (2 * size + 1, 2 * size + 1))
-    image = cv2.erode(image, kernel)
-    image = cv2.dilate(image, kernel)
+    image = cv2.morphologyEx(image, cv2.MORPH_CLOSE, kernel)
+
+    return image
+
+def getOpen(image, size=5):
+    '''
+    Morphologically open image
+    
+    Performs Morphologic operations dilate -> erode with the same kernel size
+    in order to close holes in the image
+    
+    Args:
+        image (Numpy Array): input bitmap image
+        size (int): kernel size (1,3,5,7)
+    
+    Returns:
+        filtered bitmap
+    '''
+    kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (2 * size + 1, 2 * size + 1))
+    image = cv2.morphologyEx(image, cv2.MORPH_OPEN, kernel)
 
     return image
 

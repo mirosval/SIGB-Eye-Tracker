@@ -9,7 +9,7 @@ def allTogether(windows):
     def callback(image, sliderValues):
         result = np.copy(image)
 
-        pupils = getPupils(image)
+        pupils = getPupils(image, show=False)
         result = drawPupils(result, pupils)
 
         iris = getIrisForPupil(image, pupils[0])

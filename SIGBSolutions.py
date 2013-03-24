@@ -24,7 +24,7 @@ def getPupilCandidates(image):
         # Filter out too small or too big
         if area < imageArea * 0.002 or area > imageArea * 0.3: continue
 
-        candidates.append(contour)
+        candidates.append(c.getConvexHull())
 
     candidates = sorted(candidates, key=orderPupilCandidates, reverse=True)
 
@@ -50,8 +50,12 @@ def getPupils(image, kmeansFeatureCount=5, kmeansDistanceWeight=14, show=False):
     pupils = []
     retval, gray = cv2.threshold(gray, centroids[0][0] - centroids[0][1], 255, cv2.cv.CV_THRESH_BINARY)
 
+    if show:
+        cv2.namedWindow("Thresh")
+        cv2.imshow("Thresh", gray)
+
     # Cleanup using closing
-    closed = getClosed(gray, 5)
+    closed = getOpen(gray, 8)
     if show:
         cv2.namedWindow("Closed")
         cv2.imshow("Closed", closed)
@@ -84,7 +88,8 @@ def drawPupils(image, pupils):
 ######################################################################
 
 def getIrisForPupil(image, pupil, show=False):
-    orientation, magnitude = getOrientationAndMagnitude(image)
+    gray = getGray(image)
+    orientation, magnitude = getOrientationAndMagnitude(gray)
 
     center = (int(pupil[0][0]), int(pupil[0][1]))
 
@@ -161,7 +166,7 @@ def getGlints(image, iris=None, show=False):
     centroids = sorted(centroids, key=lambda centroid: centroid[0], reverse=True)
     retval, gray = cv2.threshold(gray, centroids[0][0] - centroids[0][1], 255, cv2.cv.CV_THRESH_BINARY)
 
-    result = getClosed(gray, 2)
+    result = getOpen(gray, 2)
     glints = []
 
     imageArea = image.shape[0] * image.shape[1]
