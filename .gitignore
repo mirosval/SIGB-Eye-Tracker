@@ -28,5 +28,6 @@ local.properties
 *.pdf
 *.pyc
 Sequences/*
+Results/*
 .idea/*
 .DS_Store

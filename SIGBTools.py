@@ -80,31 +80,6 @@ def getClosed(image, size=5):
 
     return image
 
-def getPupilCandidates(image):
-    def orderPupilCandidates(pupil):
-        c = ContourTools(pupil)
-        return c.getExtend()
-
-    contours, hierarchy = cv2.findContours(image, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
-
-    imageArea = image.shape[0] * image.shape[1]
-
-    candidates = []
-    for contour in contours:
-        c = ContourTools(contour)
-        area = c.getArea()
-        if area < imageArea * 0.002 or area > imageArea * 0.3: continue
-        candidates.append(contour)
-
-    candidates = sorted(candidates, key=orderPupilCandidates, reverse=True)
-
-    pupils = []
-    for candidate in candidates:
-        pupil = cv2.fitEllipse(candidate)
-        pupils.append(pupil)
-
-    return pupils
-
 
 def getEllipseSample(ellipse, angle):
 

@@ -76,7 +76,8 @@ class SIGBWindows:
             y = 20
             for slider in sliderValues:
                 value = slider + ": " + str(sliderValues[slider])
-                cv2.putText(result, value, (x, y), cv2.FONT_HERSHEY_PLAIN, 1, (0, 0, 0))
+#                cv2.putText(result, value, (x, y), cv2.FONT_HERSHEY_PLAIN, 1, (0, 0, 0))
+                cv2.putText(result, value, (x, y), cv2.FONT_HERSHEY_PLAIN, 1, (255, 255, 255))
                 y = y + 20
 
             cv2.imshow(window, result)

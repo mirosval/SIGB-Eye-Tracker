@@ -5,6 +5,24 @@ from math import *
 from SIGBTools import *
 from SIGBSolutions import *
 
+def allTogether(windows):
+    def callback(image, sliderValues):
+        result = np.copy(image)
+
+        pupils = getPupils(image)
+        result = drawPupils(result, pupils)
+
+        iris = getIrisForPupil(image, pupils[0])
+        result = drawIris(result, iris)
+
+        glints = getGlints(image, iris)
+        result = drawGlints(result, glints)
+
+        return result
+
+    windows.registerSlider("angle", 0, 360)
+    windows.registerOnUpdateCallback("all", callback, "Temp")
+
 def irisUsingVectors(windows):
     def callback(image, sliderValues):
         result = image
@@ -12,14 +30,9 @@ def irisUsingVectors(windows):
         pupils = getPupils(image)
         pupil = pupils[0]
 
-        if len(pupils) > 0:
-            cv2.ellipse(result, pupil, (0, 0, 255), 2)
-            center = (int(pupil[0][0]), int(pupil[0][1]))
-            cv2.circle(result, center, 1, (0, 255, 0), 2)
+        iris = getIrisForPupil(image, pupil)
 
-        center, radius = getIrisForPupil(image, pupil)
-
-        cv2.circle(result, center, radius, (255, 0, 255), 2)
+        result = drawIris(iris)
 
         return result
 
@@ -28,8 +41,6 @@ def irisUsingVectors(windows):
 
 def pupilUsingKmeans(windows):
     def callback(image, sliderValues):
-
-
         k = int(sliderValues['K'])
         dw = int(sliderValues['dist_weight'])
 
@@ -37,19 +48,21 @@ def pupilUsingKmeans(windows):
 
         pupils = getPupils(image, kmeansFeatureCount=k, kmeansDistanceWeight=dw)
 
-        for pupil in pupils:
-            cv2.ellipse(result, pupil, (255, 0, 0))
-
-        if len(pupils) > 0:
-            cv2.ellipse(result, pupils[0], (0, 0, 255), 2)
-            center = (int(pupils[0][0][0]), int(pupils[0][0][1]))
-            cv2.circle(result, center, 1, (0, 255, 0), 2)
+        result = drawPupils(result, pupils)
 
         return result
 
     windows.registerSlider("K", 4, 100)
     windows.registerSlider("dist_weight", 12, 100)
     windows.registerOnUpdateCallback("kmeans", callback, "Temp")
+
+def glints(windows):
+    def glintCallBack(image, sliderValues):
+        glints = getGlints(image)
+
+        return image
+
+    windows.registerOnUpdateCallback("glint", glintCallBack, "Temp")
 
 def cannyFitting(windows):
     def callback(image, sliderValues):
@@ -112,37 +125,7 @@ def gradient(windows):
 
     windows.registerOnUpdateCallback("gradient", gradientCallback, "Temp")
 
-def getGlint(windows):
-    def glintCallBack(image, sliderValues):
-        glitmin = int(sliderValues['glitmin'])
-        glitmax = int(sliderValues['glitmax'])
-        thr = int(sliderValues['thr'])
-        gray = getGray(image)
 
-        glints = []
-        val, binI = cv2.threshold(gray, thr, 255, cv2.THRESH_BINARY)
-        contours, hierarchy = cv2.findContours(binI, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
-        accepted = []
-        result = gray
-        for contour in contours:
-            pt = ContourTools(contour)
-            if pt.getArea() < glitmin or pt.getArea() > glitmax:
-                continue
-            if pt.getExtend() < 0.7:
-                continue
-            accepted.append(contour)
-            c = pt.getCentroidInt()
-            glint = (c[0], c[1])
-            print "This is ", glint
-            glints.append(glint)
-            color = (0, 255, 0)
-            cv2.circle(result, (glitmin, glitmax), 13, color)
-
-        return result
-    windows.registerSlider("glitmin", 50, 250)
-    windows.registerSlider("glitmax", 500, 2000)
-    windows.registerSlider("thr", 10, 200)
-    windows.registerOnUpdateCallback("glint", glintCallBack, "Temp")
 
 
 def hough(windows):
@@ -190,3 +173,11 @@ def hough(windows):
     windows.registerSlider("hough_min_radius", 28, 500)
     windows.registerSlider("hough_max_radius", 110, 500)
     windows.registerOnUpdateCallback("hough", houghCallback, "Temp")
+
+def simpleShow(windows):
+    def callback(image, sliderValues):
+        gray = getGray(image)
+
+        return gray
+
+    windows.registerOnUpdateCallback("callback", callback, "Temp")
