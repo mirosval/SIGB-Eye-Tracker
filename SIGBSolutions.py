@@ -27,12 +27,11 @@ def getPupilCandidates(image):
 
         candidates.append(c.getConvexHull())
 
-#    cv2.drawContours(image, contours, -1, (255, 0, 0))
-#    cv2.imshow("Testa", image)
     candidates = sorted(candidates, key=orderPupilCandidates, reverse=True)
 
     pupils = []
     for candidate in candidates:
+        if len(candidate) < 5: continue
         pupil = cv2.fitEllipse(candidate)
 
         # Filter out too elliptical
@@ -43,16 +42,18 @@ def getPupilCandidates(image):
     return pupils
 
 def getPupils(image, kmeansFeatureCount=5, kmeansDistanceWeight=14, show=False):
+    if kmeansFeatureCount < 3: return []
+
     gray = getGray(image)
     gray = cv2.equalizeHist(gray)
 #    gray = applyGradient(gray)
 
-    centroids, variance = getKMeans(gray, featureCount=kmeansFeatureCount, distanceWeight=kmeansDistanceWeight, smallSize=(100, 75), show=show)
+    centroids, variance = getKMeans(gray, featureCount=kmeansFeatureCount, distanceWeight=kmeansDistanceWeight, smallSize=(100, 75), show=False)
 
     centroids = sorted(centroids, key=lambda centroid: centroid[0])
 
     pupils = []
-    retval, gray = cv2.threshold(gray, centroids[0][0] - centroids[0][1], 255, cv2.cv.CV_THRESH_BINARY)
+    retval, gray = cv2.threshold(gray, centroids[0][0], 255, cv2.cv.CV_THRESH_BINARY)
 
     if show:
         cv2.namedWindow("Thresh")
@@ -66,11 +67,9 @@ def getPupils(image, kmeansFeatureCount=5, kmeansDistanceWeight=14, show=False):
 
     pupils = getPupilCandidates(closed)
 
+    # Iteratively call itself with lower kmeans until something is found or min kmeans is reached
     if len(pupils) == 0:
-        if show:
-            cv2.namedWindow("Threshold")
-            cv2.imshow("Threshold", gray)
-        pupils = getPupilCandidates(gray)
+        return getPupils(image, kmeansFeatureCount=kmeansFeatureCount - 1, kmeansDistanceWeight=kmeansDistanceWeight, show=show)
 
     return pupils
 
