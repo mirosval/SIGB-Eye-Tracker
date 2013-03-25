@@ -12,11 +12,12 @@ def allTogether(windows):
         pupils = getPupils(image, show=False)
         result = drawPupils(result, pupils)
 
-        iris = getIrisForPupil(image, pupils[0], show=False)
-        result = drawIris(result, iris)
+        if len(pupils) > 0:
+            iris = getIrisForPupil(image, pupils[0], show=True)
+            result = drawIris(result, iris)
 
-        glints = getGlints(image, iris)
-        result = drawGlints(result, glints)
+            glints = getGlints(image, iris)
+            result = drawGlints(result, glints)
 
         return result
 

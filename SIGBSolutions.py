@@ -1,5 +1,6 @@
 import cv2
 from SIGBTools import *
+import operator
 
 ######################################################################
 #
@@ -26,6 +27,8 @@ def getPupilCandidates(image):
 
         candidates.append(c.getConvexHull())
 
+#    cv2.drawContours(image, contours, -1, (255, 0, 0))
+#    cv2.imshow("Testa", image)
     candidates = sorted(candidates, key=orderPupilCandidates, reverse=True)
 
     pupils = []
@@ -42,6 +45,7 @@ def getPupilCandidates(image):
 def getPupils(image, kmeansFeatureCount=5, kmeansDistanceWeight=14, show=False):
     gray = getGray(image)
     gray = cv2.equalizeHist(gray)
+#    gray = applyGradient(gray)
 
     centroids, variance = getKMeans(gray, featureCount=kmeansFeatureCount, distanceWeight=kmeansDistanceWeight, smallSize=(100, 75), show=show)
 
@@ -89,14 +93,14 @@ def drawPupils(image, pupils):
 
 def getIrisForPupil(image, pupil, show=False):
     gray = getGray(image)
-    orientation, magnitude = getOrientationAndMagnitude(gray, show=show)
+    orientation, magnitude = getOrientationAndMagnitude(gray, show=False)
 
     center = (int(pupil[0][0]), int(pupil[0][1]))
 
     pupilRadius = (pupil[1][0] / 2 + pupil[1][1] / 2) / 2
     irisRadius = 5 * pupilRadius
 
-    pupilSamples = getCircleSamples(center, min(irisRadius * 0.7, pupilRadius * 2))
+    pupilSamples = getCircleSamples(center, min(irisRadius * 0.5, pupilRadius * 2))
     irisSamples = getCircleSamples(center, irisRadius)
 
     finalIrisRadiusVotes = dict()
@@ -112,9 +116,7 @@ def getIrisForPupil(image, pupil, show=False):
         dist = sqrt(sampleVector[0] ** 2 + sampleVector[1] ** 2)
 
         angle = degrees(acos(float(sampleVector[1]) / dist))
-
-        if sampleVector[0] < 0:
-            angle = -1 * angle
+        angle = cv2.fastAtan2(sampleVector[1], sampleVector[0])
 
         cnt = 0
         for s in sob:
@@ -122,12 +124,21 @@ def getIrisForPupil(image, pupil, show=False):
                 mag = magnitude[s[1] - 1][s[0] - 1]
             except:
                 continue
-            if mag > 15:
+
+            if mag > 15 and mag < 30:
                 ori = orientation[s[1] - 1][s[0] - 1]
-                if abs(angle - ori) < 5:
+                an = angle + ori - 90.0
+                if an > 360.0: an -= 360.0
+
+                if an < 3 or an > 357:
+                    radius = sqrt((s[0] - center[0]) ** 2 + (s[1] - center[1]) ** 2)
+                    # Round radius to tens
+                    radius = round(radius / 10.0) * 10.0
+                    radius = int(radius)
+
                     if show:
                         cv2.circle(image, (s[0], s[1]), 2, (255, 255, 0), 2)
-                    radius = int(sqrt((s[0] - center[0]) ** 2 + (s[1] - center[1]) ** 2))
+
                     if radius not in finalIrisRadiusVotes:
                         finalIrisRadiusVotes[radius] = 0
 
@@ -137,13 +148,13 @@ def getIrisForPupil(image, pupil, show=False):
         if show:
             cv2.line(image, pupilSample, irisSample, (0, 255, 0))
 
-    finalIrisRadiusVotes = sorted(finalIrisRadiusVotes)
-    finalIrisRadius = finalIrisRadiusVotes.pop()
+    finalIrisRadius = max(finalIrisRadiusVotes.iteritems(), key=operator.itemgetter(1))[0]
 
     if show:
-        cv2.circle(image, center, radius, (255, 0, 255), 2)
+        cv2.circle(image, center, finalIrisRadius, (255, 0, 255), 2)
+        cv2.imshow("Iris Samples", image)
 
-    return (center, radius)
+    return (center, finalIrisRadius)
 
 def drawIris(image, iris):
     center = iris[0]

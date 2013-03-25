@@ -53,8 +53,11 @@ def getOrientationAndMagnitude(image, show=False):
     height, width = h.shape
     for y in range(height):
         for x in range(width):
-            orientation[y][x] = atan2(h[y][x], v[y][x]) * 180 / pi
-            magnitude[y][x] = sqrt(pow(h[y][x], 2) + pow(v[y][x], 2))
+            orientation[y][x] = cv2.fastAtan2(h[y][x], v[y][x])
+#            orientation[y][x] = atan2(h[y][x], v[y][x]) * 180 / pi
+#            magnitude[y][x] = sqrt(pow(h[y][x], 2) + pow(v[y][x], 2))
+
+    magnitude = cv2.magnitude(h, v)
 
     if show:
 
@@ -105,6 +108,22 @@ def getOpen(image, size=5):
     '''
     kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (2 * size + 1, 2 * size + 1))
     image = cv2.morphologyEx(image, cv2.MORPH_OPEN, kernel)
+
+    return image
+
+def applyGradient(image):
+    if len(image.shape) == 3:
+        image = getGray(image)
+
+    height, width = image.shape
+
+    center = (width / 2, height / 2)
+    for y, row in enumerate(image):
+        for x, value in enumerate(row):
+            dx = float(x - center[0]) / float(center[0])
+            dy = float(y - center[1]) / float(center[1])
+            weight = sqrt((dx ** 2 + dy ** 2) * 0.5)
+            image[y][x] = min(255, int(image[y][x] + 255 * weight))
 
     return image
 
