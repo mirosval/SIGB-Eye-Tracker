@@ -147,6 +147,9 @@ def getIrisForPupil(image, pupil, show=False):
         if show:
             cv2.line(image, pupilSample, irisSample, (0, 255, 0))
 
+    if len(finalIrisRadiusVotes) == 0:
+        return None
+
     finalIrisRadius = max(finalIrisRadiusVotes.iteritems(), key=operator.itemgetter(1))[0]
 
     if show:

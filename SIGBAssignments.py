@@ -13,7 +13,7 @@ def allTogether(windows):
         result = drawPupils(result, pupils)
 
         if len(pupils) > 0:
-            iris = getIrisForPupil(image, pupils[0], show=True)
+            iris = getIrisForPupil(image, pupils[0], show=False)
             result = drawIris(result, iris)
 
             glints = getGlints(image, iris)
@@ -21,7 +21,6 @@ def allTogether(windows):
 
         return result
 
-    windows.registerSlider("angle", 0, 360)
     windows.registerOnUpdateCallback("all", callback, "Temp")
 
 def irisUsingVectors(windows):
