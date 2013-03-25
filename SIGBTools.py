@@ -40,7 +40,7 @@ def getKMeans(image, featureCount=2, distanceWeight=2, smallSize=(100, 100), sho
 
     return centroids, variance
 
-def getOrientationAndMagnitude(image):
+def getOrientationAndMagnitude(image, show=False):
     sobelHorizontal = cv2.Sobel(image, cv2.CV_32F, 1, 0)
     sobelVertical = cv2.Sobel(image, cv2.CV_32F, 0, 1)
 
@@ -55,6 +55,18 @@ def getOrientationAndMagnitude(image):
         for x in range(width):
             orientation[y][x] = atan2(h[y][x], v[y][x]) * 180 / pi
             magnitude[y][x] = sqrt(pow(h[y][x], 2) + pow(v[y][x], 2))
+
+    if show:
+
+        fig = figure()
+        imshow(magnitude)
+        matplotlib.pyplot.show()
+
+        fig2 = figure()
+        res = 7
+        quiver(h[::res, ::res], -v[::res, ::res])
+        imshow(image[::res, ::res], cmap=gray())
+        matplotlib.pyplot.show()
 
     return orientation, magnitude
 

@@ -89,7 +89,7 @@ def drawPupils(image, pupils):
 
 def getIrisForPupil(image, pupil, show=False):
     gray = getGray(image)
-    orientation, magnitude = getOrientationAndMagnitude(gray)
+    orientation, magnitude = getOrientationAndMagnitude(gray, show=show)
 
     center = (int(pupil[0][0]), int(pupil[0][1]))
 
