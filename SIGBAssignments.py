@@ -5,8 +5,18 @@ from math import *
 from SIGBTools import *
 from SIGBSolutions import *
 
+# This file contains different detectors that we have been partially building
+# to get our final solution
+
+# Look for functions such as getPupils() an drawPupils() in SIGBSolutions.py
+# Most of the get*() functions have a "show" parameter that can be set to True
+# in which case the function will draw intermediate steps as well
+
 def allTogether(windows):
     def callback(image, sliderValues):
+
+        # results image is the one that we draw our solution into, so we don't
+        # want to use it for further detections steps
         result = np.copy(image)
 
         pupils = getPupils(image, show=False)

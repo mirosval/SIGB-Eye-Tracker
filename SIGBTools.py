@@ -6,10 +6,40 @@ from pylab import *
 from scipy.cluster.vq import *
 from scipy.misc import imresize
 
+# Various tools for use with the eye tracker
+# Please note that I copied some of the code from original
+# SIGB Tools module from Dan Witzner Hansen, IT University
+# I've credited him in the docstrings of the functions that
+# I've copied form him
+
 def getGray(image):
+    '''
+    Wrapper for OpenCV function to convert to grayscale
+    
+    Params:
+        image (numpy array): BGR image as numpy array
+        
+    Returns:
+        (numpy array) grayscale image
+    '''
     return cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
 def getKMeans(image, featureCount=2, distanceWeight=2, smallSize=(100, 100), show=False):
+    '''
+    Calculate k-means for the image
+    
+    Original Author: Dan Witzner Hansen, IT University
+    
+    Params:
+        image (numpy array): Grayscale image to be used
+        featureCount (int): how many partitions should be created
+        distanceWeight (int): > 0 weight of the position parameters
+        smallSize (tuple (int, int)): size of the smaller image to perform kmeans on
+        show (bool): Show the kmeans image
+    
+    Returns:
+        (centroids, variance)
+    '''
     height, width = image.shape
 
     small = cv2.resize(image, smallSize)
@@ -41,6 +71,20 @@ def getKMeans(image, featureCount=2, distanceWeight=2, smallSize=(100, 100), sho
     return centroids, variance
 
 def getOrientationAndMagnitude(image, show=False):
+    '''
+    Calculate orientation and magnitude of the gradient image
+    and return it as vector arrays
+    
+    Uses cv2.fastAtan2 for fast orientation calc, cv2.magnitude
+    for fast magnitude calculation
+    
+    Params:
+        image (numpy array): grayscale image to compute this on
+        show (bool): show intermediate steps
+    
+    Returns:
+        (orientation, magnitude): numpy arrays
+    '''
     sobelHorizontal = cv2.Sobel(image, cv2.CV_32F, 1, 0)
     sobelVertical = cv2.Sobel(image, cv2.CV_32F, 0, 1)
 
@@ -54,8 +98,6 @@ def getOrientationAndMagnitude(image, show=False):
     for y in range(height):
         for x in range(width):
             orientation[y][x] = cv2.fastAtan2(h[y][x], v[y][x])
-#            orientation[y][x] = atan2(h[y][x], v[y][x]) * 180 / pi
-#            magnitude[y][x] = sqrt(pow(h[y][x], 2) + pow(v[y][x], 2))
 
     magnitude = cv2.magnitude(h, v)
 
@@ -112,6 +154,18 @@ def getOpen(image, size=5):
     return image
 
 def applyGradient(image):
+    '''
+    Apply radial gradient (alpha -> white) from the center of the image
+    creating a sort of 'vignette' effect to counter black borders of some
+    images that were causing false pupil detects...
+    Not used
+    
+    Params:
+        image (numpy array): image to apply the gradient to
+    
+    Returns:
+        image (numpy array) image with the gradient applied
+    '''
     if len(image.shape) == 3:
         image = getGray(image)
 
@@ -126,12 +180,6 @@ def applyGradient(image):
             image[y][x] = min(255, int(image[y][x] + 255 * weight))
 
     return image
-
-
-def getEllipseSample(ellipse, angle):
-
-
-    print(ellipse)
 
 class ContourTools:
     '''Class used for getting descriptors of contour-based connected components 
@@ -149,6 +197,8 @@ class ContourTools:
     getEquivdiameter: sqrt(4*Area/pi)
     getExtend: Ratio of the area and the area of the bounding box. Expresses how spread out the contour is
     getConvexhull: Calculates the convex hull of the contour points
+    
+    Original Author: Dan Witzner Hansen, IT University
     
     Returns: Dictionary with key equal to the property name
     
@@ -203,9 +253,21 @@ class ContourTools:
         return cv2.convexHull(self.contour)
 
 def getCircleSamples(center=(0, 0), radius=1, nPoints=30):
-    ''' Samples a circle with center center = (x,y) , radius =1 and in nPoints on the circle.
+    '''
+    Samples a circle with center center = (x,y) , radius =1 and in nPoints on the circle.
     Returns an array of a tuple containing the points (x,y) on the circle and the curve gradient in the point (dx,dy)
-    Notice the gradient (dx,dy) has unit length'''
+    Notice the gradient (dx,dy) has unit length
+    
+    Original Author: Dan Witzner Hansen, IT University
+    
+    Params:
+        center (tuple (int x, int y)): center of the circle to sample
+        radius (int): radius of the circle to sample
+        nPoints (int): how many samples do you want
+    
+    Returns:
+        list of samples (tuple containing the points (x,y) on the circle and the curve gradient in the point (dx,dy))
+    '''
 
 
     s = np.linspace(0, 2 * math.pi, nPoints)
@@ -214,10 +276,20 @@ def getCircleSamples(center=(0, 0), radius=1, nPoints=30):
     return P
 
 def getLineCoordinates(p1, p2):
-    "Get integer coordinates between p1 and p2 using Bresenhams algorithm"
-    " When an image I is given the method also returns the values of I along the line from p1 to p2. p1 and p2 should be within the image I"
-    " Usage: coordinates=getLineCoordinates((x1,y1),(x2,y2))"
-
+    '''
+    Get integer coordinates between p1 and p2 using Bresenhams algorithm
+    When an image I is given the method also returns the values of I along the line from p1 to p2. p1 and p2 should be within the image I
+    Usage: coordinates=getLineCoordinates((x1,y1),(x2,y2))
+    
+    Original Auhtor: Dan Witzner Hansen, IT University
+    
+    Params:
+        point1 (tuple(int x,int y)): Start of the line
+        point2 (tuple(int x,int y)): End of the line
+    
+    Returns:
+        list of tuples (x,y) coordinates that lie on the line
+    '''
 
     (x1, y1) = p1
     x1 = int(x1); y1 = int(y1)
