@@ -5,12 +5,45 @@ from math import *
 from SIGBTools import *
 from SIGBSolutions import *
 
+from os.path import basename
+
 # This file contains different detectors that we have been partially building
 # to get our final solution
 
 # Look for functions such as getPupils() an drawPupils() in SIGBSolutions.py
 # Most of the get*() functions have a "show" parameter that can be set to True
 # in which case the function will draw intermediate steps as well
+
+def processSequence(windows):
+    imageCount = windows.getTotalVideoFrames()
+    writer = windows.getVideoWriter("Sequences/Processed/" + basename(windows.videoFile))
+
+    for frameId in range(imageCount):
+        image = windows.getVideoFrame(frameId)
+
+        result = np.copy(image)
+
+        pupils = getPupils(image, show=False)
+        result = drawPupils(result, pupils)
+
+        if len(pupils) > 0:
+            iris = getIrisForPupil(image, pupils[0], show=False)
+            result = drawIris(result, iris)
+
+            glints = getGlints(image, iris)
+            result = drawGlints(result, glints)
+
+        cv2.imshow("Temp", image)
+        cv2.imshow("Results", result)
+
+        writer.write(result)
+
+        cv2.waitKey(1)
+
+    writer.release()
+    exit()
+
+
 
 def allTogether(windows):
     def callback(image, sliderValues):

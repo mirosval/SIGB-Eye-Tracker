@@ -18,8 +18,11 @@ windows.openImage("Sequences/hough2.png")
 # their purpose is to register and evaluate sliders and pass the
 # parameters to a particular function that can accept it
 
+
+processSequence(windows)
+
 # this will load all of the detectors, pupil, iris and glint all at the same time
-allTogether(windows)
+# allTogether(windows)
 
 # load glint detector with parameters
 # glints(windows)

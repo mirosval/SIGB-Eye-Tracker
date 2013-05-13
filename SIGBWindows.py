@@ -169,6 +169,7 @@ class SIGBWindows:
         Params: 
             videoFile (string): path to video file to be open
         '''
+        self.videoFile = videoFile
         self.video = cv2.VideoCapture(videoFile)
         self.registerSlider("video_position", 2, self.getTotalVideoFrames())
 
@@ -216,4 +217,11 @@ class SIGBWindows:
             (int) frame count
         '''
         return int(self.video.get(cv2.cv.CV_CAP_PROP_FRAME_COUNT))
+
+    def getVideoWriter(self, filename):
+        size = (int(self.video.get(cv2.cv.CV_CAP_PROP_FRAME_WIDTH)), int(self.video.get(cv2.cv.CV_CAP_PROP_FRAME_HEIGHT)))
+        fps = self.video.get(cv2.cv.CV_CAP_PROP_FPS)
+        self.videoWriter = cv2.VideoWriter(filename, cv2.cv.FOURCC("X", "V", "I", "D"), fps, size)
+
+        return self.videoWriter
 
