@@ -31,3 +31,5 @@ Sequences/*
 Results/*
 .idea/*
 .DS_Store
+
+*.aux
