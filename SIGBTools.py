@@ -4,7 +4,7 @@ import numpy as np
 from math import *
 from pylab import *
 from scipy.cluster.vq import *
-from scipy.misc import imresize
+# from scipy.misc import imresize
 
 # Various tools for use with the eye tracker
 # Please note that I copied some of the code from original

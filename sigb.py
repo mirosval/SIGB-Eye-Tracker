@@ -9,7 +9,7 @@ from SIGBAssignments import *
 windows = SIGBWindows(mode="video")
 
 # loads video
-windows.openVideo("Sequences/eye1.avi")
+windows.openVideo("Sequences/eye8.avi")
 
 # loads an image
 windows.openImage("Sequences/hough2.png")
